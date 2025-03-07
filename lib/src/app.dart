@@ -1,30 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
-import 'settings/settings_controller.dart';
+import 'settings/notifier/settings_notifier.dart';
 import 'settings/settings_view.dart';
 
-/// The Widget that configures your application.
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({
     super.key,
-    required this.settingsController,
   });
 
-  final SettingsController settingsController;
-
   @override
-  Widget build(BuildContext context) {
-    // Glue the SettingsController to the MaterialApp.
-    //
-    // The ListenableBuilder Widget listens to the SettingsController for changes.
-    // Whenever the user updates their settings, the MaterialApp is rebuilt.
-    return ListenableBuilder(
-      listenable: settingsController,
-      builder: (BuildContext context, Widget? child) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ProviderScope(
+      child: Consumer(builder: (context, ref, widget) {
+        final settings = ref.watch(settingsProvider);
         return MaterialApp(
           // Providing a restorationScopeId allows the Navigator built by the
           // MaterialApp to restore the navigation stack when a user leaves and
@@ -50,15 +43,10 @@ class MyApp extends StatelessWidget {
           //
           // The appTitle is defined in .arb files found in the localization
           // directory.
-          onGenerateTitle: (BuildContext context) =>
-              AppLocalizations.of(context)!.appTitle,
-
-          // Define a light and dark color theme. Then, read the user's
-          // preferred ThemeMode (light, dark, or system default) from the
-          // SettingsController to display the correct theme.
+          onGenerateTitle: (BuildContext context) => AppLocalizations.of(context)!.appTitle,
           theme: ThemeData(),
           darkTheme: ThemeData.dark(),
-          themeMode: settingsController.themeMode,
+          themeMode: settings.themeMode,
 
           // Define a function to handle named routes in order to support
           // Flutter web url navigation and deep linking.
@@ -68,7 +56,7 @@ class MyApp extends StatelessWidget {
               builder: (BuildContext context) {
                 switch (routeSettings.name) {
                   case SettingsView.routeName:
-                    return SettingsView(controller: settingsController);
+                    return SettingsView();
                   case SampleItemDetailsView.routeName:
                     return const SampleItemDetailsView();
                   case SampleItemListView.routeName:
@@ -79,7 +67,7 @@ class MyApp extends StatelessWidget {
             );
           },
         );
-      },
+      }),
     );
   }
 }
