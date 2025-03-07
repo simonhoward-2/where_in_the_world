@@ -1,0 +1,6 @@
+{
+  "appTitle": "where_in_the_world",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
