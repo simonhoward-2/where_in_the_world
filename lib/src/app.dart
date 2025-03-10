@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'router/router_provider.dart';
 import 'sample_feature/sample_item_details_view.dart';
 import 'sample_feature/sample_item_list_view.dart';
 import 'settings/notifier/settings_notifier.dart';
@@ -18,7 +19,7 @@ class MyApp extends ConsumerWidget {
     return ProviderScope(
       child: Consumer(builder: (context, ref, widget) {
         final settings = ref.watch(settingsProvider);
-        return MaterialApp(
+        return MaterialApp.router(
           // Providing a restorationScopeId allows the Navigator built by the
           // MaterialApp to restore the navigation stack when a user leaves and
           // returns to the app after it has been killed while running in the
@@ -48,24 +49,25 @@ class MyApp extends ConsumerWidget {
           darkTheme: ThemeData.dark(),
           themeMode: settings.themeMode,
 
-          // Define a function to handle named routes in order to support
-          // Flutter web url navigation and deep linking.
-          onGenerateRoute: (RouteSettings routeSettings) {
-            return MaterialPageRoute<void>(
-              settings: routeSettings,
-              builder: (BuildContext context) {
-                switch (routeSettings.name) {
-                  case SettingsView.routeName:
-                    return SettingsView();
-                  case SampleItemDetailsView.routeName:
-                    return const SampleItemDetailsView();
-                  case SampleItemListView.routeName:
-                  default:
-                    return const SampleItemListView();
-                }
-              },
-            );
-          },
+          routerConfig: ref.watch(goRouterProvider),
+          // // Define a function to handle named routes in order to support
+          // // Flutter web url navigation and deep linking.
+          // onGenerateRoute: (RouteSettings routeSettings) {
+          //   return MaterialPageRoute<void>(
+          //     settings: routeSettings,
+          //     builder: (BuildContext context) {
+          //       switch (routeSettings.name) {
+          //         case SettingsView.routeName:
+          //           return SettingsView();
+          //         case SampleItemDetailsView.routeName:
+          //           return const SampleItemDetailsView();
+          //         case SampleItemListView.routeName:
+          //         default:
+          //           return const SampleItemListView();
+          //       }
+          //     },
+          //   );
+          // },
         );
       }),
     );
