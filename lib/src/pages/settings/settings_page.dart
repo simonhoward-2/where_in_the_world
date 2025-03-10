@@ -4,16 +4,10 @@ import 'package:where_in_the_world/src/common_widgets/main_scaffold/main_scaffol
 
 import 'notifier/settings_notifier.dart';
 
-/// Displays the various settings that can be customized by the user.
-///
-/// When a user changes a setting, the SettingsController is updated and
-/// Widgets that listen to the SettingsController are rebuilt.
-class SettingsView extends ConsumerWidget {
-  const SettingsView({
+class SettingsPage extends ConsumerWidget {
+  const SettingsPage({
     super.key,
   });
-
-  static const routeName = '/settings';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

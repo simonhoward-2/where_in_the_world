@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:where_in_the_world/src/pages/settings/settings_view.dart';
+import 'package:where_in_the_world/src/pages/settings/constants/settings_page_constants.dart';
 
 class MainScaffold extends ConsumerWidget {
   final String title;
@@ -25,7 +25,7 @@ class MainScaffold extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                context.pushNamed(SettingsView.routeName);
+                context.pushNamed(settingsPageRoute);
               },
             ),
         ],
