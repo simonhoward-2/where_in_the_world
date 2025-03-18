@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:where_in_the_world/src/common_widgets/main_scaffold/main_scaffold.dart';
-import 'package:where_in_the_world/src/pages/home_page/constants/simons_locations.dart';
-import 'package:where_in_the_world/src/pages/home_page/state/current_selected_location.dart';
-import 'package:where_in_the_world/src/pages/settings/notifier/settings_notifier.dart';
+
+import '../../common_widgets/main_scaffold/main_scaffold.dart';
+import '../settings/notifier/settings_notifier.dart';
+import 'constants/simons_visits.dart';
+import 'state/current_selected_location.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -47,12 +48,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       (previous, next) {
         // Position has changed
         _controller.future.then((controller) {
-          controller.animateCamera(CameraUpdate.newLatLng(next.position));
+          controller.animateCamera(CameraUpdate.newLatLng(next.location.position));
         });
       },
     );
 
-    final currentLocation = simonsLocations.last;
+    final currentLocation = simonsVisits.last.location;
     var selectedLocation = ref.watch(currentSelectedLocationProvider);
 
     final dateFormat = DateFormat('MMM y');
@@ -71,17 +72,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                 data: (data) => GoogleMap(
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
-                    target: selectedLocation.position,
+                    target: selectedLocation.location.position,
                     zoom: 3,
                   ),
                   style: themeMode == ThemeMode.dark ? data : "[]",
-                  markers: simonsLocations.map((location) {
+                  markers: simonsVisits.map((visit) {
+                    var location = visit.location;
                     return Marker(
                       markerId: MarkerId(location.city),
                       position: location.position,
                       infoWindow: InfoWindow(
                           title: location.city,
-                          snippet: '${dateFormat.format(location.start)} - ${location.end != null ? dateFormat.format(location.end!) : "Present"}'),
+                          snippet: '${dateFormat.format(visit.start)} - ${visit.end != null ? dateFormat.format(visit.end!) : "Present"}'),
                     );
                   }).toSet(),
                   onMapCreated: (GoogleMapController controller) {
@@ -104,16 +106,16 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: CarouselView(
                   itemExtent: 200,
                   onTap: (value) {
-                    ref.read(currentSelectedLocationProvider.notifier).selectLocation(simonsLocations[value]);
+                    ref.read(currentSelectedLocationProvider.notifier).selectLocation(simonsVisits[value]);
                   },
-                  children: simonsLocations.map((location) {
+                  children: simonsVisits.map((visit) {
                     return ColoredBox(
-                      color: location == selectedLocation ? Colors.blue : Colors.teal,
+                      color: visit == selectedLocation ? Colors.blue : Colors.teal,
                       child: Center(
                         child: Column(
                           children: [
-                            Text('${location.city}, ${location.country}'),
-                            Text('${dateFormat.format(location.start)} - ${location.end != null ? dateFormat.format(location.end!) : "Present"}'),
+                            Text('${visit.location.city}, ${visit.location.country}'),
+                            Text('${dateFormat.format(visit.start)} - ${visit.end != null ? dateFormat.format(visit.end!) : "Present"}'),
                           ],
                         ),
                       ),

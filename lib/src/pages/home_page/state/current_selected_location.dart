@@ -1,15 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:where_in_the_world/src/pages/home_page/constants/simons_locations.dart';
-import 'package:where_in_the_world/src/pages/home_page/models/location_period.dart';
 
-final currentSelectedLocationProvider = StateNotifierProvider<CurrentSelectedLocationNotifier, LocationPeriod>((ref) {
+import '../constants/simons_visits.dart';
+import '../models/location.dart';
+import '../models/location_visit.dart';
+
+final currentSelectedLocationProvider = StateNotifierProvider<CurrentSelectedLocationNotifier, LocationVisit>((ref) {
   return CurrentSelectedLocationNotifier();
 });
 
-class CurrentSelectedLocationNotifier extends StateNotifier<LocationPeriod> {
-  CurrentSelectedLocationNotifier() : super(simonsLocations.last);
+class CurrentSelectedLocationNotifier extends StateNotifier<LocationVisit> {
+  CurrentSelectedLocationNotifier() : super(simonsVisits.last);
 
-  void selectLocation(LocationPeriod location) {
-    state = location;
+  void selectLocation(LocationVisit locationVisit) {
+    state = locationVisit;
   }
 }
