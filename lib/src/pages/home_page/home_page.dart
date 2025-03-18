@@ -20,22 +20,19 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
   late FutureProvider<String?> darkMapStyle;
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(-33.8626157, 151.1949714),
-    zoom: 8,
-  );
-
   @override
   void initState() {
+    // Load the dark map style
     darkMapStyle = FutureProvider((ref) async {
       return await DefaultAssetBundle.of(context).loadString('assets/maps_dark_theme.json');
     });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Await the loading of the dark map style
+    // Load the json text of the dark map style
     var darkMapStyleLoaded = ref.watch(darkMapStyle);
 
     // Get the theme mode for the map styling
@@ -44,7 +41,19 @@ class _HomePageState extends ConsumerState<HomePage> {
       themeMode = MediaQuery.of(context).platformBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
     }
 
-    var currentLocation = ref.watch(currentSelectedLocationProvider);
+    // watch for changes in the current location
+    ref.listen(
+      currentSelectedLocationProvider,
+      (previous, next) {
+        // Position has changed
+        _controller.future.then((controller) {
+          controller.animateCamera(CameraUpdate.newLatLng(next.position));
+        });
+      },
+    );
+
+    final currentLocation = simonsLocations.last;
+    var selectedLocation = ref.watch(currentSelectedLocationProvider);
 
     final dateFormat = DateFormat('MMM y');
 
@@ -61,15 +70,20 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: darkMapStyleLoaded.when(
                 data: (data) => GoogleMap(
                   mapType: MapType.normal,
-                  initialCameraPosition: _kGooglePlex,
+                  initialCameraPosition: CameraPosition(
+                    target: selectedLocation.position,
+                    zoom: 3,
+                  ),
                   style: themeMode == ThemeMode.dark ? data : "[]",
-                  markers: {
-                    Marker(
-                      markerId: MarkerId("Simon"),
-                      position: currentLocation.position,
-                      infoWindow: InfoWindow(title: "Simon Howard"),
-                    ),
-                  },
+                  markers: simonsLocations.map((location) {
+                    return Marker(
+                      markerId: MarkerId(location.city),
+                      position: location.position,
+                      infoWindow: InfoWindow(
+                          title: location.city,
+                          snippet: '${dateFormat.format(location.start)} - ${location.end != null ? dateFormat.format(location.end!) : "Present"}'),
+                    );
+                  }).toSet(),
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
                   },
@@ -89,9 +103,12 @@ class _HomePageState extends ConsumerState<HomePage> {
               constraints: BoxConstraints(maxHeight: 50),
               child: CarouselView(
                   itemExtent: 200,
+                  onTap: (value) {
+                    ref.read(currentSelectedLocationProvider.notifier).selectLocation(simonsLocations[value]);
+                  },
                   children: simonsLocations.map((location) {
                     return ColoredBox(
-                      color: Colors.teal,
+                      color: location == selectedLocation ? Colors.blue : Colors.teal,
                       child: Center(
                         child: Column(
                           children: [
@@ -102,19 +119,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     );
                   }).toList()),
-              // [
-              //   ColoredBox(
-              //     color: Colors.teal,
-              //     child: Center(
-              //       child: Column(
-              //         children: [
-              //           Text('Sydney Australia'),
-              //           Text('March 2025 - Present'),
-              //         ],
-              //       ),
-              //     ),
-              //   ),
-              // ],
             ),
           ),
         ],
