@@ -20,12 +20,23 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
   late FutureProvider<String?> darkMapStyle;
+  final carouselController = CarouselController();
 
   @override
   void initState() {
     // Load the dark map style
     darkMapStyle = FutureProvider((ref) async {
       return await DefaultAssetBundle.of(context).loadString('assets/maps_dark_theme.json');
+    });
+
+    //carouselController.jumpTo(simonsVisits.length - 1);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      carouselController.animateTo(
+        carouselController.position.maxScrollExtent,
+        duration: Durations.long1,
+        curve: Curves.easeInOut,
+      );
     });
 
     super.initState();
@@ -99,24 +110,45 @@ class _HomePageState extends ConsumerState<HomePage> {
           Text('Current location: ${currentLocation.city}, ${currentLocation.country}'),
           Text('Timezone: ${currentLocation.timeZoneString}'),
           SizedBox(height: 20),
+          Text('Timeline'),
+          SizedBox(height: 20),
           SizedBox(
             width: 600,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 50),
+              constraints: BoxConstraints(maxHeight: 70),
               child: CarouselView(
                   itemExtent: 200,
+                  controller: carouselController,
                   onTap: (value) {
                     ref.read(currentSelectedLocationProvider.notifier).selectLocation(simonsVisits[value]);
                   },
                   children: simonsVisits.map((visit) {
                     return ColoredBox(
                       color: visit == selectedLocation ? Colors.blue : Colors.teal,
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Text('${visit.location.city}, ${visit.location.country}'),
-                            Text('${dateFormat.format(visit.start)} - ${visit.end != null ? dateFormat.format(visit.end!) : "Present"}'),
-                          ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '${visit.location.city}, ${visit.location.country}',
+                                  maxLines: 1,
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.fade,
+                                ),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  '${dateFormat.format(visit.start)} - ${visit.end != null ? dateFormat.format(visit.end!) : "Present"}',
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.fade,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
