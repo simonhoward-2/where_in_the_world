@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../common_widgets/main_scaffold/main_scaffold.dart';
 import '../settings/notifier/settings_notifier.dart';
 import 'constants/simons_visits.dart';
+import 'models/location_visit.dart';
 import 'state/current_selected_location.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -21,6 +22,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
   late FutureProvider<String?> darkMapStyle;
   final carouselController = CarouselController();
+
+  final tileOffest = 200.0;
+  final carouselWidth = 600.0;
 
   @override
   void initState() {
@@ -42,6 +46,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.initState();
   }
 
+  void animateCarouselTo(LocationVisit visit) {
+    var index = simonsVisits.indexOf(visit);
+    var desiredOffset = index * tileOffest - (carouselWidth - tileOffest) / 2;
+    var offset = desiredOffset.clamp(0, carouselController.position.maxScrollExtent) as double;
+    carouselController.animateTo(offset, duration: Durations.long1, curve: Curves.easeInOut);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Load the json text of the dark map style
@@ -60,7 +71,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         // Position has changed
         _controller.future.then((controller) {
           controller.animateCamera(CameraUpdate.newLatLng(next.location.position));
+          controller.showMarkerInfoWindow(MarkerId(next.location.city));
         });
+        animateCarouselTo(next);
       },
     );
 
@@ -92,6 +105,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                     return Marker(
                       markerId: MarkerId(location.city),
                       position: location.position,
+                      onTap: () {
+                        ref.read(currentSelectedLocationProvider.notifier).selectLocation(visit);
+                      },
                       infoWindow: InfoWindow(
                           title: location.city,
                           snippet: '${dateFormat.format(visit.start)} - ${visit.end != null ? dateFormat.format(visit.end!) : "Present"}'),
@@ -113,11 +129,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           Text('Timeline'),
           SizedBox(height: 20),
           SizedBox(
-            width: 600,
+            width: carouselWidth,
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 70),
+              constraints: BoxConstraints(maxHeight: 100),
               child: CarouselView(
-                  itemExtent: 200,
+                  itemExtent: tileOffest,
                   controller: carouselController,
                   onTap: (value) {
                     ref.read(currentSelectedLocationProvider.notifier).selectLocation(simonsVisits[value]);

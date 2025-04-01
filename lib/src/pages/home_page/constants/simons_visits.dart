@@ -75,7 +75,7 @@ final simonsVisits = [
   // Peschichi, Italy
   LocationVisit(
     location: Location(
-      city: 'Peschichi',
+      city: 'Peschici',
       country: 'Italy',
       timeZoneString: 'CEST +2',
       position: LatLng(41.9583, 16.0076),
