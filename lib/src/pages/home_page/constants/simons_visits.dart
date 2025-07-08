@@ -1,7 +1,5 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../models/location_visit.dart';
-
-import '../models/location.dart';
+import 'package:locations_history_browser/locations_history_browser.dart';
 
 final homeLocation = Location(
   city: 'Sydney',
