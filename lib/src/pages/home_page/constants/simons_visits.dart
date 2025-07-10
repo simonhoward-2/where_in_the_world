@@ -1,4 +1,3 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:locations_history_browser/locations_history_browser.dart';
 
 final homeLocation = Location(
